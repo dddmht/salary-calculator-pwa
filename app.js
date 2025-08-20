@@ -1,3 +1,69 @@
+// 监听PWA安装提示事件
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  // 阻止浏览器默认提示
+  e.preventDefault();
+  // 保存事件，以便稍后触发
+  deferredPrompt = e;
+  // 创建安装按钮（如果不存在）
+  createInstallButton();
+});
+
+// 监听应用安装完成事件
+window.addEventListener('appinstalled', () => {
+  // 清除 deferredPrompt
+  deferredPrompt = null;
+  // 隐藏安装按钮
+  hideInstallButton();
+  console.log('应用已安装');
+});
+
+// 创建安装按钮函数
+function createInstallButton() {
+  if (document.getElementById('install-btn')) return;
+
+  const installBtn = document.createElement('button');
+  installBtn.id = 'install-btn';
+  installBtn.textContent = '安装应用';
+  installBtn.style.position = 'fixed';
+  installBtn.style.bottom = '20px';
+  installBtn.style.right = '20px';
+  installBtn.style.padding = '10px 20px';
+  installBtn.style.backgroundColor = '#317EFB';
+  installBtn.style.color = 'white';
+  installBtn.style.border = 'none';
+  installBtn.style.borderRadius = '5px';
+  installBtn.style.cursor = 'pointer';
+  installBtn.style.zIndex = '1000';
+
+  installBtn.addEventListener('click', () => {
+    if (deferredPrompt) {
+      // 显示安装提示
+      deferredPrompt.prompt();
+      // 等待用户选择
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('用户接受了安装提示');
+        } else {
+          console.log('用户拒绝了安装提示');
+        }
+        deferredPrompt = null;
+        hideInstallButton();
+      });
+    }
+  });
+
+  document.body.appendChild(installBtn);
+}
+
+// 隐藏安装按钮函数
+function hideInstallButton() {
+  const installBtn = document.getElementById('install-btn');
+  if (installBtn) {
+    installBtn.style.display = 'none';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // 获取DOM元素
     const userFormSection = document.getElementById('user-form-section');
@@ -55,6 +121,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // 切换到结果页面
         userFormSection.classList.add('hidden');
         resultSection.classList.remove('hidden');
+
+        // 显示安装按钮（如果支持PWA）
+        if ('serviceWorker' in navigator && 'BeforeInstallPromptEvent' in window) {
+          createInstallButton();
+        }
 
         // 显示问候语
         displayGreeting(userSettings.name);
