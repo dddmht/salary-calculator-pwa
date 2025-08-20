@@ -5,9 +5,7 @@ const ASSETS_TO_CACHE = [
     '/styles.css',
     '/app.js',
     '/manifest.json',
-    '/images/icon-32x32.png',
-    '/images/icon-192x192.png',
-    '/images/icon-512x512.png'
+    '/images/icon.svg'
 ];
 
 // 安装Service Worker
